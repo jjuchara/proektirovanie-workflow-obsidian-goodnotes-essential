@@ -1,0 +1,20 @@
+.goodnotes-workflow-preview {
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+  margin: var(--size-4-3) 0;
+  padding: var(--size-4-3);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.goodnotes-workflow-warning {
+  color: var(--text-warning);
+}
+
+.goodnotes-workflow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
+  justify-content: flex-end;
+  margin-top: var(--size-4-4);
+}

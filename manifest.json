@@ -1,0 +1,9 @@
+{
+  "id": "goodnotes-handwriting-workflow",
+  "name": "Goodnotes Handwriting Workflow",
+  "version": "0.1.0",
+  "minAppVersion": "1.8.0",
+  "description": "Start a Goodnotes handwriting session from an Obsidian note and safely attach the exported result.",
+  "author": "jjuchara",
+  "isDesktopOnly": false
+}

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "workflows": [
+    {
+      "id": "project-help",
+      "description": "Explain the generated project plugin, roles, workflows, and evidence model.",
+      "definition": "definitions/project-help.md"
+    },
+    {
+      "id": "project-plan",
+      "description": "Create an evidence-backed plan before changing project artifacts.",
+      "definition": "definitions/project-plan.md"
+    },
+    {
+      "id": "project-verify",
+      "description": "Verify project output against its declared quality contract.",
+      "definition": "definitions/project-verify.md"
+    },
+    {
+      "id": "project-review",
+      "description": "Perform an independent review of the current requested scope.",
+      "definition": "definitions/project-review.md"
+    },
+    {
+      "id": "project-learn",
+      "description": "Persist new durable project knowledge without duplicating sources.",
+      "definition": "definitions/project-learn.md"
+    },
+    {
+      "id": "project-status",
+      "description": "Report project kit health, unresolved questions, and generated-file status.",
+      "definition": "definitions/project-status.md"
+    },
+    {
+      "id": "project-research",
+      "description": "Collect and rank evidence for a project question.",
+      "definition": "definitions/project-research.md"
+    },
+    {
+      "id": "project-analyze",
+      "description": "Analyse evidence while separating facts, inference, and unknowns.",
+      "definition": "definitions/project-analyze.md"
+    },
+    {
+      "id": "project-synthesize",
+      "description": "Synthesize approved analysis into the requested deliverable.",
+      "definition": "definitions/project-synthesize.md"
+    },
+    {
+      "id": "project-document",
+      "description": "Create or revise a document under project source and quality rules.",
+      "definition": "definitions/project-document.md"
+    },
+    {
+      "id": "project-debug",
+      "description": "Diagnose unexpected software behavior before implementing a fix.",
+      "definition": "definitions/project-debug.md"
+    },
+    {
+      "id": "project-simplify",
+      "description": "Simplify changed code without changing behavior.",
+      "definition": "definitions/project-simplify.md"
+    }
+  ]
+}

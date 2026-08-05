@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "agents": [
+    {
+      "id": "project-scout",
+      "description": "Read-only context scout for Проектирование workflow Obsidian + Goodnotes (Essential).",
+      "sandboxMode": "read-only",
+      "capabilities": [
+        "read",
+        "search"
+      ],
+      "delegation": {
+        "mode": "disabled",
+        "allowedAgents": []
+      }
+    },
+    {
+      "id": "project-reviewer",
+      "description": "Independent read-only reviewer for Проектирование workflow Obsidian + Goodnotes (Essential).",
+      "sandboxMode": "read-only",
+      "capabilities": [
+        "read",
+        "search",
+        "shell"
+      ],
+      "delegation": {
+        "mode": "task-scoped",
+        "allowedAgents": [
+          "project-scout"
+        ]
+      }
+    },
+    {
+      "id": "project-analyst",
+      "description": "Evidence-led analyst for Проектирование workflow Obsidian + Goodnotes (Essential).",
+      "sandboxMode": "workspace-write",
+      "capabilities": [
+        "read",
+        "search",
+        "write"
+      ],
+      "delegation": {
+        "mode": "task-scoped",
+        "allowedAgents": [
+          "project-scout",
+          "project-reviewer"
+        ]
+      }
+    },
+    {
+      "id": "document-specialist",
+      "description": "Document specialist for Проектирование workflow Obsidian + Goodnotes (Essential).",
+      "sandboxMode": "workspace-write",
+      "capabilities": [
+        "read",
+        "search",
+        "write"
+      ],
+      "delegation": {
+        "mode": "task-scoped",
+        "allowedAgents": [
+          "project-scout",
+          "project-reviewer"
+        ]
+      }
+    },
+    {
+      "id": "source-verifier",
+      "description": "Read-only source and claim verifier for Проектирование workflow Obsidian + Goodnotes (Essential).",
+      "sandboxMode": "read-only",
+      "capabilities": [
+        "read",
+        "search"
+      ],
+      "delegation": {
+        "mode": "task-scoped",
+        "allowedAgents": [
+          "project-scout"
+        ]
+      }
+    },
+    {
+      "id": "test-engineer",
+      "description": "Test engineer for Проектирование workflow Obsidian + Goodnotes (Essential).",
+      "sandboxMode": "workspace-write",
+      "capabilities": [
+        "read",
+        "search",
+        "write",
+        "shell"
+      ],
+      "delegation": {
+        "mode": "task-scoped",
+        "allowedAgents": [
+          "project-scout",
+          "project-reviewer"
+        ]
+      }
+    }
+  ]
+}

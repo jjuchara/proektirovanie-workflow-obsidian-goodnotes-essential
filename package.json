@@ -1,0 +1,29 @@
+{
+  "name": "goodnotes-handwriting-workflow",
+  "version": "0.1.0",
+  "description": "Obsidian workflow for explicit, non-destructive Goodnotes handwriting capture.",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs production",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "validate": "node scripts/validate.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run validate"
+  },
+  "keywords": [
+    "obsidian",
+    "goodnotes",
+    "handwriting"
+  ],
+  "author": "jjuchara",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "esbuild": "^0.28.1",
+    "obsidian": "^1.13.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

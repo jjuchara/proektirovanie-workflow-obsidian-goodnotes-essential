@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "factoryVersion": "0.1.0",
+  "projectSlug": "obsidian-goodnotes-essential-workflow",
+  "generatedAt": "2026-08-05T10:13:16.827Z",
+  "blueprintSha256": "e1dcb7cb1916281d144cc79208fdfb490e3ec1fa427bbaf7cee549314763e9f5",
+  "files": [
+    {
+      "path": ".projectAgents/AGENTS.md",
+      "ownership": "managed",
+      "sha256": "2ddef44af1809b5df97458155769aafad2b3f3d180b2c97ea62c3e300da7626f"
+    },
+    {
+      "path": ".projectAgents/README.md",
+      "ownership": "managed",
+      "sha256": "39e154d17e2554faff4316a8ef883cf1ec03927350428106959ce47c03765aa9"
+    },
+    {
+      "path": ".projectAgents/project-profile.json",
+      "ownership": "managed",
+      "sha256": "e1dcb7cb1916281d144cc79208fdfb490e3ec1fa427bbaf7cee549314763e9f5"
+    },
+    {
+      "path": ".projectAgents/evidence/index.json",
+      "ownership": "managed",
+      "sha256": "dd5fd65cdc96bf81da4fe11927b63ab0d4eeff0ee095efeba365fc8da542288c"
+    },
+    {
+      "path": ".projectAgents/context/project-intelligence/navigation.md",
+      "ownership": "seed",
+      "sha256": "592b8707559b86654ed94e76e44ae4a721f1326ed93be87a1450b7d59394ed36"
+    },
+    {
+      "path": ".projectAgents/context/project-intelligence/project-overview.md",
+      "ownership": "seed",
+      "sha256": "c2b7b66ab3b940cf4fc9dde2af4d8205012e6f6d3f2770c06807a6a2d464142d"
+    },
+    {
+      "path": ".projectAgents/context/project-intelligence/quality-contract.md",
+      "ownership": "seed",
+      "sha256": "566998bc7f362937d849b3973feaa57f370590e7e702712173af2af60bef5e3c"
+    },
+    {
+      "path": ".projectAgents/context/project-intelligence/source-governance.md",
+      "ownership": "seed",
+      "sha256": "6e72ebbe71e06ffdbcfb2710eefd532f9395ac29864abb592ee5168d42a65af4"
+    },
+    {
+      "path": ".projectAgents/docs/working-rules.md",
+      "ownership": "seed",
+      "sha256": "46a16e4bb33b54488c39785f025b46e2c73f0af331f34ef762866ffa50aa09ee"
+    },
+    {
+      "path": ".projectAgents/memory/MEMORY.md",
+      "ownership": "seed",
+      "sha256": "18aa608c5ddc3bb5fc812687a0f6c75b719a614b168a0eb25d5ab5d2a5a9d0ab"
+    },
+    {
+      "path": ".projectAgents/agents/catalog.json",
+      "ownership": "managed",
+      "sha256": "ae49aeed6efb09e44cf1a1cfc967b8e620811bd8e627f274590ec1e252ad2596"
+    },
+    {
+      "path": ".projectAgents/workflows/catalog.json",
+      "ownership": "managed",
+      "sha256": "20739159617419ba657d2d0fa7f7da54d560cf72f049493a954b4580722deeec"
+    },
+    {
+      "path": ".projectAgents/.agents/plugins/marketplace.json",
+      "ownership": "managed",
+      "sha256": "fe4d13ba1b27cf011d11e431814bd793f1e9053fe75c7f64ac46906ebdcf84af"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/.codex-plugin/plugin.json",
+      "ownership": "managed",
+      "sha256": "fecd02497ac493faa3fde51e6a7144dbee1efa2d99f7f57f73570d6ca0862824"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/hooks/hooks.json",
+      "ownership": "managed",
+      "sha256": "bfcc35fb3ba62097e879ee10004952d1d3d8904d0018e54e1d74654b55895832"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/hooks/session-start.sh",
+      "ownership": "managed",
+      "sha256": "8e65d9d7d145f825ee59db3d7cc659f41beed8e4d4d0487e2dc9ee559ad91b9e"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/using-project/SKILL.md",
+      "ownership": "managed",
+      "sha256": "6dddf3e4a7c21898f9d347fe5009bedb8ee36e847084ca515e7016e42d2f4c68"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-memory/SKILL.md",
+      "ownership": "managed",
+      "sha256": "fd8c6b6d6046c5cdd3fefe6a9d6e1954bee0012464f99b02ede10dd51ea6421b"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/self-learning/SKILL.md",
+      "ownership": "managed",
+      "sha256": "0e8b46028ecda83fa2cfb4e7ffb52dc66f37fbeff2b447b4d164b1cccacfa5ec"
+    },
+    {
+      "path": ".projectAgents/scripts/project-plugin-init.mjs",
+      "ownership": "managed",
+      "sha256": "c5d3d9b90639e467337a394ac16fc6ec07fb420cf2fe82f8eb13a88e4c6e7ed3"
+    },
+    {
+      "path": ".projectAgents/agents/definitions/project-scout.md",
+      "ownership": "managed",
+      "sha256": "517bfdb4c862cd87d4ce616d6b03ad13098929a12e7d8ef6778597c2297c57a6"
+    },
+    {
+      "path": ".codex/agents/project-scout.toml",
+      "ownership": "managed",
+      "sha256": "68c7ed6d656aa015bd90976ee0663819c8dd7bd2f8d4f710eb474210ad228249"
+    },
+    {
+      "path": ".projectAgents/agents/definitions/project-reviewer.md",
+      "ownership": "managed",
+      "sha256": "6761b19cb97883322a3817a745b1ca067bcb0b2dc328e8a18113d4024a72d0b3"
+    },
+    {
+      "path": ".codex/agents/project-reviewer.toml",
+      "ownership": "managed",
+      "sha256": "a5b98d3d1e4288fecbfe646ee2b22820fc36d6576b2913868ac648f9f1a56568"
+    },
+    {
+      "path": ".projectAgents/agents/definitions/project-analyst.md",
+      "ownership": "managed",
+      "sha256": "d850c6a574299a7ab8f0844943467efae5bccdfc288a3e3bcca03dd8bc2f185a"
+    },
+    {
+      "path": ".codex/agents/project-analyst.toml",
+      "ownership": "managed",
+      "sha256": "56f9ce854ed048628c6ece4382dc21a8e0624edceb8bb971a1bebb6746aead2b"
+    },
+    {
+      "path": ".projectAgents/agents/definitions/document-specialist.md",
+      "ownership": "managed",
+      "sha256": "dd0573e209b356a950510b0f678f8e20b8ccee3bd352edc72f37800bd22a154d"
+    },
+    {
+      "path": ".codex/agents/document-specialist.toml",
+      "ownership": "managed",
+      "sha256": "fa7a1d7c17fb50f49d60818784b0b8c7181e70d4bed8e473cf2f5ae9ff3cdbbb"
+    },
+    {
+      "path": ".projectAgents/agents/definitions/source-verifier.md",
+      "ownership": "managed",
+      "sha256": "7cb0790b9e62fbb899445b9a6a13e79e9d5c0a15975a421c8a66656d982b55f8"
+    },
+    {
+      "path": ".codex/agents/source-verifier.toml",
+      "ownership": "managed",
+      "sha256": "73684784db22061f3efb0ec828b04ec5d785bfa4b6761350a98fe4613944993b"
+    },
+    {
+      "path": ".projectAgents/agents/definitions/test-engineer.md",
+      "ownership": "managed",
+      "sha256": "adb214dd484ae1c35516df2bf280fb0a775a5d3238cafef9368dde50c21d0516"
+    },
+    {
+      "path": ".codex/agents/test-engineer.toml",
+      "ownership": "managed",
+      "sha256": "9fe0fcbf1ab901938687855db158a938ad8935f9c67ec2de0cc43e8578a53dec"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-help.md",
+      "ownership": "managed",
+      "sha256": "ddca94f352efb6be49e0b4fb71e9ea17d0c9673c80525206c42de225225cab86"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-help/SKILL.md",
+      "ownership": "managed",
+      "sha256": "8e855a59293c47d81dc52a084635cc9e21c9aadd014719863b08e01c346c0885"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-plan.md",
+      "ownership": "managed",
+      "sha256": "9a0c3a07f7477cae9514ec9f751c5175e21ad53f3d51c62518747c04e2671f7d"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-plan/SKILL.md",
+      "ownership": "managed",
+      "sha256": "bab2fe4e1ff7b90b0215dc4857a4eee83a8cc056ae0fbff62408f270791c20d0"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-verify.md",
+      "ownership": "managed",
+      "sha256": "46da92c1431f569a0990f8542c09299956742533e3b0ee67631624b4f5383f2a"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-verify/SKILL.md",
+      "ownership": "managed",
+      "sha256": "d661cc0ee39dd28908f08906dd198354b8386c13b4d66d4755707f17be7bffcf"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-review.md",
+      "ownership": "managed",
+      "sha256": "9c2820d71e34f8a5c692cd9a75218f7abeb758836935334912314de8a9af8534"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-review/SKILL.md",
+      "ownership": "managed",
+      "sha256": "9300af9b5affac722df4b8a7e1f16991e2eba175d79ac1b3cebc9e1c66ff795a"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-learn.md",
+      "ownership": "managed",
+      "sha256": "45fc9af0485ee32ad7360ae8fa07d720ff7b30b71755ca2759303a19d73db862"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-learn/SKILL.md",
+      "ownership": "managed",
+      "sha256": "2a25dc33914ddf8fac5075737a96bb3952171472b5fe60020318a1e0a212c147"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-status.md",
+      "ownership": "managed",
+      "sha256": "e85e88d65c29ef235f0767a0823abe48e2404752adb6b31984f0d8699ca4ebc2"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-status/SKILL.md",
+      "ownership": "managed",
+      "sha256": "7bea9cce0034a1e2e1a45a072cc472630bb6448e20c3e85e18da9867550cead2"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-research.md",
+      "ownership": "managed",
+      "sha256": "6a2806f92431bfea84d4812be13d5ecf39fc9e5350877c8774fa6760feb76e5d"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-research/SKILL.md",
+      "ownership": "managed",
+      "sha256": "ea82c1a8e9ddba3383e81c9c9f0458aee9e12b94fe6f81f6ade3a1fd10945a94"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-analyze.md",
+      "ownership": "managed",
+      "sha256": "3febad2fc0667ac6f604568edd2e831e1d50d911ccb20ac8d7b5cd0984d6c57e"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-analyze/SKILL.md",
+      "ownership": "managed",
+      "sha256": "1738608cd251cbfe8efc761fdfaccaf7e7926a6f998afe54afd076c2289d83a9"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-synthesize.md",
+      "ownership": "managed",
+      "sha256": "930e47c4ed3999fb945e8233db6e5df13fa703cef9b35e9a77a0aac5cb1b056a"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-synthesize/SKILL.md",
+      "ownership": "managed",
+      "sha256": "457bfe529114c8e5ff33bddc57adb789d724f87b86cf7d4970ae2c8b0c95302b"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-document.md",
+      "ownership": "managed",
+      "sha256": "06d1e0a8e89b425aa49418d10b21d75fbab1350957a6480a4388c18932392580"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-document/SKILL.md",
+      "ownership": "managed",
+      "sha256": "bc3431a5b69587ec34eabc89f0c4ef513516c488f582e48ad6335a125f93d67c"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-debug.md",
+      "ownership": "managed",
+      "sha256": "5b6128dfef067d8b316d563351a7c57d882d1cc7f35d99b2ea9d7c74e53e5446"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-debug/SKILL.md",
+      "ownership": "managed",
+      "sha256": "741e46008823be6edf2023d3cadbdb73dd8d2c13364e9bed4db13ffd9c9b6c45"
+    },
+    {
+      "path": ".projectAgents/workflows/definitions/project-simplify.md",
+      "ownership": "managed",
+      "sha256": "556e1e072429361653da9608710f430a9dd8095694e51aa7591a9bb6ed9a910e"
+    },
+    {
+      "path": ".projectAgents/plugins/obsidian-goodnotes-essential-workflow-codex-plugin/skills/project-simplify/SKILL.md",
+      "ownership": "managed",
+      "sha256": "400aa97231892f13ea4fe2db059f5f86e369509ffffbc86b06a0c29efafbcdbe"
+    }
+  ]
+}

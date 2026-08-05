@@ -1,0 +1,31 @@
+{
+  "name": "obsidian-goodnotes-essential-workflow-codex-plugin",
+  "version": "0.1.0",
+  "description": "Project-owned Codex context, agents, workflows, and memory for Проектирование workflow Obsidian + Goodnotes (Essential).",
+  "author": {
+    "name": "Проектирование workflow Obsidian + Goodnotes (Essential) project"
+  },
+  "keywords": [
+    "project-context",
+    "agents",
+    "workflow",
+    "mixed"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Проектирование workflow Obsidian + Goodnotes (Essential)",
+    "shortDescription": "Project workflow for Проектирование workflow Obsidian + Goodnotes (Essential).",
+    "longDescription": "Loads project-owned rules, evidence governance, agents, workflows, and memory for Проектирование workflow Obsidian + Goodnotes (Essential).",
+    "developerName": "Проектирование workflow Obsidian + Goodnotes (Essential) project",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Show project help.",
+      "Plan this task with project context.",
+      "Verify the current deliverable."
+    ]
+  }
+}

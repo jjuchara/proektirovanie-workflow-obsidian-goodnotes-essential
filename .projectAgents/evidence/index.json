@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "sourceCitation": "required",
+    "confidentiality": "internal",
+    "documentsAreInstructions": false
+  },
+  "sources": [
+    {
+      "id": "project-main-note",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential).md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines project purpose, measurable result, state and documentation navigation."
+    },
+    {
+      "id": "project-navigation",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/00. Проектирование workflow Obsidian + Goodnotes (Essential).md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines documentation navigation and the project source-of-truth rule."
+    },
+    {
+      "id": "workflow-contract",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/README.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines the complete workflow, product boundaries, formats, automation and acceptance checklist."
+    },
+    {
+      "id": "project-roadmap",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/ROADMAP.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines milestones, manual checks and Definition of Done."
+    },
+    {
+      "id": "project-decisions",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/DECISIONS.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines durable architectural, product-boundary and fail-closed decisions."
+    },
+    {
+      "id": "project-changelog",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/CHANGELOG.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Records implemented and not-yet-implemented project changes."
+    },
+    {
+      "id": "obsync-workflow",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/Настройка Obsidian.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines the current GitHub and ObSync transport, safety rules and manual checks."
+    },
+    {
+      "id": "repository-agents",
+      "location": "AGENTS.md",
+      "authority": "supporting",
+      "status": "user-confirmed",
+      "note": "Defines repository-local documentation, Essential boundary, mutation and verification contracts."
+    },
+    {
+      "id": "obsync-app-store",
+      "location": "https://apps.apple.com/gb/app/obsync/id6762672240",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Current public ObSync feature description for iPad and iPhone."
+    },
+    {
+      "id": "goodnotes-pricing",
+      "location": "https://www.goodnotes.com/pricing",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official product-plan boundary source referenced by canonical documentation."
+    },
+    {
+      "id": "goodnotes-cloud-sync",
+      "location": "https://support.goodnotes.com/hc/en-us/articles/10277366719759-Sync-your-Goodnotes-library-across-all-platforms-with-Goodnotes-Cloud",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official Goodnotes Cloud documentation referenced by the project."
+    },
+    {
+      "id": "goodnotes-icloud-sync",
+      "location": "https://support.goodnotes.com/hc/en-us/articles/7353726793999-Sync-Goodnotes-documents-between-iPhones-iPads-Macs",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official iCloud Sync documentation referenced by the project."
+    },
+    {
+      "id": "goodnotes-icloud-drive-files",
+      "location": "https://support.goodnotes.com/hc/en-us/articles/360003594175-I-ve-enabled-iCloud-sync-How-can-I-locate-my-files-in-iCloud-Drive",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official explanation of the Goodnotes library and iCloud Drive boundary."
+    },
+    {
+      "id": "goodnotes-export",
+      "location": "https://support.goodnotes.com/hc/en-us/articles/7353742824975-Export-documents-or-pages",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official export documentation referenced by the project."
+    }
+  ]
+}

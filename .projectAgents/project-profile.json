@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "Проектирование workflow Obsidian + Goodnotes (Essential)",
+    "slug": "obsidian-goodnotes-essential-workflow",
+    "kind": "mixed",
+    "summary": "Проектирует и проверяет управляемый пользователем workflow экспорта рукописных материалов и аннотированных PDF из Goodnotes Essential в Obsidian и PARA на MacBook, iPad и iPhone. Vault синхронизируется через GitHub и ObSync; проект включает реализацию Obsidian-плагина для безопасного review экспортов.",
+    "workingLanguage": "Russian",
+    "domain": "Personal knowledge management, Goodnotes Essential, Obsidian, GitHub, ObSync, Apple Shortcuts and Obsidian plugin development",
+    "artifactTypes": [
+      "Russian canonical project documentation",
+      "Apple Shortcuts",
+      "Goodnotes templates",
+      "Markdown sidecars",
+      "Obsidian Dataview and Tasks configuration",
+      "manual verification evidence",
+      "Obsidian plugin source code, tests and release artifacts when explicitly requested"
+    ],
+    "capabilityPacks": [
+      "coding",
+      "research",
+      "documentation",
+      "source-verification"
+    ]
+  },
+  "policies": {
+    "communicationLanguage": "Russian",
+    "writeApproval": "explicit",
+    "confidentiality": "internal",
+    "sourceCitation": "required",
+    "delegation": "read-only"
+  },
+  "qualityCriteria": [
+    "Russian Obsidian documentation is canonical for behavior, decisions, roadmap and manual evidence.",
+    "Goodnotes Essential remains a hard product boundary unless a new explicit canonical decision changes it.",
+    "Export starts with an explicit Share Sheet action; Cancel performs no write.",
+    "Automation never overwrites or deletes a source artifact and repeated export preserves prior versions.",
+    "After explicit preview and confirmation, the plugin may move the exported copy within the vault; this never overwrites another file and never changes the editable Goodnotes original.",
+    "The Obsidian vault uses GitHub and ObSync as its only cross-device file transport; iCloud Drive and Obsidian Sync are not enabled in parallel for this vault.",
+    "Git divergence and conflicts fail closed and never trigger an automatic discard of local changes.",
+    "Material product claims are traceable to canonical documentation or authoritative sources, with inference and unknowns labelled.",
+    "Behavior is manually verified on MacBook, iPad and iPhone before being reported as complete.",
+    "If implementation is added, only repository checks that actually exist are run and their exact results are reported."
+  ],
+  "sources": [
+    {
+      "id": "project-main-note",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential).md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines project purpose, measurable result, state and documentation navigation."
+    },
+    {
+      "id": "project-navigation",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/00. Проектирование workflow Obsidian + Goodnotes (Essential).md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines documentation navigation and the project source-of-truth rule."
+    },
+    {
+      "id": "workflow-contract",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/README.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines the complete workflow, product boundaries, formats, automation and acceptance checklist."
+    },
+    {
+      "id": "project-roadmap",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/ROADMAP.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines milestones, manual checks and Definition of Done."
+    },
+    {
+      "id": "project-decisions",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/DECISIONS.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines durable architectural, product-boundary and fail-closed decisions."
+    },
+    {
+      "id": "project-changelog",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/CHANGELOG.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Records implemented and not-yet-implemented project changes."
+    },
+    {
+      "id": "obsync-workflow",
+      "location": "/Users/jjuchara/Documents/MySecondBrain/1. Projects/Проектирование workflow Obsidian + Goodnotes (Essential)/Настройка Obsidian.md",
+      "authority": "canonical",
+      "status": "user-confirmed",
+      "note": "Defines the current GitHub and ObSync transport, safety rules and manual checks."
+    },
+    {
+      "id": "repository-agents",
+      "location": "AGENTS.md",
+      "authority": "supporting",
+      "status": "user-confirmed",
+      "note": "Defines repository-local documentation, Essential boundary, mutation and verification contracts."
+    },
+    {
+      "id": "obsync-app-store",
+      "location": "https://apps.apple.com/gb/app/obsync/id6762672240",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Current public ObSync feature description for iPad and iPhone."
+    },
+    {
+      "id": "goodnotes-pricing",
+      "location": "https://www.goodnotes.com/pricing",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official product-plan boundary source referenced by canonical documentation."
+    },
+    {
+      "id": "goodnotes-cloud-sync",
+      "location": "https://support.goodnotes.com/hc/en-us/articles/10277366719759-Sync-your-Goodnotes-library-across-all-platforms-with-Goodnotes-Cloud",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official Goodnotes Cloud documentation referenced by the project."
+    },
+    {
+      "id": "goodnotes-icloud-sync",
+      "location": "https://support.goodnotes.com/hc/en-us/articles/7353726793999-Sync-Goodnotes-documents-between-iPhones-iPads-Macs",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official iCloud Sync documentation referenced by the project."
+    },
+    {
+      "id": "goodnotes-icloud-drive-files",
+      "location": "https://support.goodnotes.com/hc/en-us/articles/360003594175-I-ve-enabled-iCloud-sync-How-can-I-locate-my-files-in-iCloud-Drive",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official explanation of the Goodnotes library and iCloud Drive boundary."
+    },
+    {
+      "id": "goodnotes-export",
+      "location": "https://support.goodnotes.com/hc/en-us/articles/7353742824975-Export-documents-or-pages",
+      "authority": "supporting",
+      "status": "observed",
+      "note": "Official export documentation referenced by the project."
+    }
+  ],
+  "commands": {
+    "plugin": "npm run check",
+    "repository-text": "git diff --check"
+  },
+  "openQuestions": [
+    "Whether Apple Shortcuts can write directly into the ObSync-managed vault on both iPad and iPhone."
+  ]
+}
