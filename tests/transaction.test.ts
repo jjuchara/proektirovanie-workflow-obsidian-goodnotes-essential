@@ -102,6 +102,29 @@ describe("review transaction", () => {
     expect(source.content).toContain("![[1. Projects/Alpha/screens/final.png]]");
   });
 
+  it("inserts a PDF as an embed", async () => {
+    vault.files.delete(attachment.path);
+    attachment = makeFile("6. Inbox/Handwriting/Goodnotes/export.pdf", "binary");
+    vault.files.set(attachment.path, attachment);
+
+    const result = await executeReviewTransaction(makeApp(vault), {
+      attachment: attachment as never,
+      finalAttachmentPath: "1. Projects/Alpha/Goodnotes/exports/final.pdf",
+      sidecarPath: "1. Projects/Alpha/Goodnotes/exports/final.md",
+      sourceNote: source as never,
+      expectedSourceContent: source.content,
+      insertionMode: "end",
+      insertionOffset: source.content.length,
+      buildSidecar: (link) => `sidecar\n${link}\n`
+    });
+
+    expect(result.attachmentLink).toBe("![[1. Projects/Alpha/Goodnotes/exports/final.pdf]]");
+    expect(source.content).toContain("![[1. Projects/Alpha/Goodnotes/exports/final.pdf]]");
+    expect(vault.files.get("1. Projects/Alpha/Goodnotes/exports/final.md")?.content).toContain(
+      "![[1. Projects/Alpha/Goodnotes/exports/final.pdf]]"
+    );
+  });
+
   it("fails before mutation when a target is occupied", async () => {
     vault.files.set("1. Projects/Alpha/screens/final.png", makeFile("1. Projects/Alpha/screens/final.png"));
     await expect(

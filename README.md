@@ -4,7 +4,7 @@ Mobile-compatible Obsidian plugin for an explicit, non-destructive handwriting f
 
 ```text
 Obsidian source note → Apple Shortcut → Goodnotes → Share Sheet export
-→ Obsidian Inbox → preview → confirmed move + sidecar + source-note link
+→ Obsidian Inbox → preview → confirmed move + sidecar + source-note embed
 ```
 
 Product behavior and planning are canonical in the Russian Obsidian project documentation. This
@@ -18,8 +18,8 @@ repository contains implementation, usage, maintenance, and verification contrac
 - Restores the source-note relationship after switching applications.
 - Shows a final preview before any export routing or note mutation.
 - Never overwrites an attachment or sidecar; collisions receive `v02`, `v03`, and so on.
-- On confirmation, moves the exported copy, creates a Markdown sidecar, and inserts a PDF link or
-  image embed into the source note.
+- On confirmation, moves the exported copy, creates a Markdown sidecar, and inserts a PDF/image
+  embed into the source note.
 - If the source note changed, requires an explicit insertion location.
 - Supports explicit resume and abandon commands. Abandoning a session never deletes Inbox files.
 
@@ -38,7 +38,8 @@ The ribbon pen icon invokes the start command.
 
 The plugin expects a shortcut named `Start Goodnotes Handwriting` by default. It receives a JSON text
 payload and opens the Goodnotes app. The export shortcut remains a separate Share Sheet action that
-saves PDF/images to the configured Inbox and opens the `MySecondBrain` vault.
+saves PDF/images to the configured Inbox and opens the current device's vault. On the confirmed iPad
+clone, that vault is named `MySecondBrainIpad`; on Mac it is named `MySecondBrain`.
 
 See [docs/SHORTCUTS.md](docs/SHORTCUTS.md). Direct Shortcut access to an ObSync-managed mobile vault
 is still a manual device gate.

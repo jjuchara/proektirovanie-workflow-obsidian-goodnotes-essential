@@ -120,7 +120,7 @@ function validateVaultPath(path: string): string {
 
 function buildAttachmentLink(app: App, attachment: TFile, sourceNote: TFile): string {
   const link = app.fileManager.generateMarkdownLink(attachment, sourceNote.path);
-  return attachment.extension.toLowerCase() === "pdf" ? link : `!${link}`;
+  return `!${link}`;
 }
 
 function errorMessage(error: unknown): string {

@@ -34,8 +34,11 @@ Minimum action sequence:
 
 1. Stop without writing when no Share Sheet input exists or the user cancels.
 2. Accept one exported PDF or image from Goodnotes.
-3. Save it to `6. Inbox/Handwriting/Goodnotes` without replacing an existing file.
-4. Open `obsidian://open?vault=MySecondBrain`.
+3. On the confirmed iPad clone, save it without replacement to
+   `On My iPad/Obsidian/MySecondBrainIpad/6. Inbox/Handwriting/Goodnotes`.
+   The plugin-relative Inbox remains `6. Inbox/Handwriting/Goodnotes`.
+4. On iPad, open `obsidian://open?vault=MySecondBrainIpad`. The Mac vault name is
+   `MySecondBrain`; each device URI must use the name shown by Obsidian on that device.
 
 If direct access to the ObSync clone is unavailable, save to a local staging folder and import the
 file explicitly. Do not reintroduce iCloud Drive as a second vault synchronization mechanism.
