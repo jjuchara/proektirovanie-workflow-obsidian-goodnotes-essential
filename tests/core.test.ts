@@ -9,6 +9,12 @@ import {
   sanitizeSegment
 } from "../src/core/paths";
 import { buildSidecar } from "../src/core/sidecar";
+import {
+  binaryHash,
+  normalizeGoodnotesSourceLink,
+  readSidecarProvenance,
+  updateSidecarAfterEdit
+} from "../src/core/edit";
 import { buildShortcutUrl } from "../src/core/shortcut";
 import { appendBlock, contentHash, insertAt } from "../src/core/text";
 import type { PendingCapture, WorkflowSettings } from "../src/types";
@@ -128,10 +134,56 @@ describe("sidecar", () => {
       projectNote: "1. Projects/Alpha/meeting.md",
       captured: "2026-08-05",
       sourceNote: "1. Projects/Alpha/meeting.md",
-      attachmentLink: "![[screens/diagram.png]]"
+      attachmentLink: "![[screens/diagram.png]]",
+      attachmentPath: "1. Projects/Alpha/screens/diagram.png",
+      attachmentHash: "abc123",
+      sourceLink: "https://share.goodnotes.com/s/abc"
     });
     expect(sidecar).toContain("source_app: Goodnotes");
     expect(sidecar).toContain('project: "[[1. Projects/Alpha/meeting]]"');
     expect(sidecar).toContain("![[screens/diagram.png]]");
+    expect(readSidecarProvenance(sidecar)).toEqual({
+      sourceLink: "https://share.goodnotes.com/s/abc",
+      artifactPath: "1. Projects/Alpha/screens/diagram.png",
+      artifactHash: "abc123"
+    });
+  });
+
+  it("updates edit provenance without changing the sidecar body", () => {
+    const before = `---
+source_app: Goodnotes
+source_link: null
+artifact_path: "old.pdf"
+artifact_hash: "old"
+---
+
+# Note
+`;
+    const updated = updateSidecarAfterEdit(before, {
+      sourceLink: "https://share.goodnotes.com/s/updated",
+      artifactPath: "target.pdf",
+      artifactHash: "new",
+      editedAt: "2026-09-03T10:00:00.000Z"
+    });
+    expect(updated).toContain('source_link: "https://share.goodnotes.com/s/updated"');
+    expect(updated).toContain('artifact_path: "target.pdf"');
+    expect(updated).toContain('artifact_hash: "new"');
+    expect(updated).toContain("edited_at: 2026-09-03T10:00:00.000Z");
+    expect(updated).toContain("# Note");
+  });
+
+  it("accepts only HTTPS Goodnotes links", () => {
+    expect(normalizeGoodnotesSourceLink("https://share.goodnotes.com/s/abc")).toBe(
+      "https://share.goodnotes.com/s/abc"
+    );
+    expect(normalizeGoodnotesSourceLink("http://share.goodnotes.com/s/abc")).toBeNull();
+    expect(normalizeGoodnotesSourceLink("https://example.com/goodnotes")).toBeNull();
+  });
+
+  it("hashes binary exports deterministically", () => {
+    const first = new TextEncoder().encode("first").buffer;
+    const second = new TextEncoder().encode("second").buffer;
+    expect(binaryHash(first)).toBe(binaryHash(first));
+    expect(binaryHash(first)).not.toBe(binaryHash(second));
   });
 });

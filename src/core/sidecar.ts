@@ -12,6 +12,9 @@ export interface SidecarInput {
   captured: string;
   sourceNote: string;
   attachmentLink: string;
+  attachmentPath: string;
+  attachmentHash: string;
+  sourceLink: string | null;
 }
 
 export function buildSidecar(input: SidecarInput): string {
@@ -24,6 +27,9 @@ source_app: Goodnotes
 artifact_kind: ${yamlString(input.artifact.toLowerCase())}
 para: ${input.para}
 ${projectLine}source_note: ${yamlString(`[[${input.sourceNote.replace(/\.md$/i, "")}]]`)}
+source_link: ${input.sourceLink === null ? "null" : yamlString(input.sourceLink)}
+artifact_path: ${yamlString(input.attachmentPath)}
+artifact_hash: ${yamlString(input.attachmentHash)}
 captured: ${input.captured}
 status: processed
 ---

@@ -5,7 +5,8 @@ vi.mock("obsidian", () => ({
   TFile: class {}
 }));
 
-import { executeReviewTransaction } from "../src/transaction";
+import { binaryHash } from "../src/core/edit";
+import { executeEditReplacementTransaction, executeReviewTransaction } from "../src/transaction";
 
 interface FakeFile {
   path: string;
@@ -17,6 +18,7 @@ class FakeVault {
   files = new Map<string, FakeFile>();
   folders = new Set<string>();
   failModify = false;
+  failDelete = false;
 
   getAbstractFileByPath(path: string): FakeFile | object | null {
     return this.files.get(path) ?? (this.folders.has(path) ? {} : null);
@@ -33,6 +35,10 @@ class FakeVault {
     return file;
   }
 
+  async readBinary(file: FakeFile): Promise<ArrayBuffer> {
+    return new TextEncoder().encode(file.content).buffer as ArrayBuffer;
+  }
+
   async createFolder(path: string): Promise<void> {
     this.folders.add(path);
   }
@@ -45,7 +51,15 @@ class FakeVault {
     file.content = content;
   }
 
+  async modifyBinary(file: FakeFile, content: ArrayBuffer): Promise<void> {
+    file.content = new TextDecoder().decode(content);
+  }
+
   async delete(file: FakeFile): Promise<void> {
+    if (this.failDelete) {
+      this.failDelete = false;
+      throw new Error("delete failed");
+    }
     this.files.delete(file.path);
   }
 }
@@ -160,5 +174,129 @@ describe("review transaction", () => {
     expect(vault.files.has("6. Inbox/Handwriting/Goodnotes/export.png")).toBe(true);
     expect(vault.files.has("1. Projects/Alpha/screens/final.md")).toBe(false);
     expect(source.content).toBe("# Note\n");
+  });
+});
+
+describe("edit replacement transaction", () => {
+  let vault: FakeVault;
+  let target: FakeFile;
+  let replacement: FakeFile;
+  let sidecar: FakeFile;
+
+  beforeEach(() => {
+    vault = new FakeVault();
+    target = makeFile("1. Projects/Alpha/Goodnotes/exports/final.pdf", "old export");
+    replacement = makeFile("6. Inbox/Handwriting/Goodnotes/edited.pdf", "new export");
+    sidecar = makeFile("1. Projects/Alpha/Goodnotes/exports/final.md", "old sidecar");
+    vault.files.set(target.path, target);
+    vault.files.set(replacement.path, replacement);
+    vault.files.set(sidecar.path, sidecar);
+  });
+
+  it("fully replaces the artifact at the stable path and removes the returned export", async () => {
+    await executeEditReplacementTransaction(makeApp(vault), {
+      replacement: replacement as never,
+      expectedReplacementHash: binaryHash(await vault.readBinary(replacement)),
+      target: target as never,
+      expectedTargetHash: binaryHash(await vault.readBinary(target)),
+      sidecar: sidecar as never,
+      expectedSidecarContent: "old sidecar",
+      updatedSidecarContent: "updated sidecar"
+    });
+
+    expect(target.path).toBe("1. Projects/Alpha/Goodnotes/exports/final.pdf");
+    expect(target.content).toBe("new export");
+    expect(sidecar.content).toBe("updated sidecar");
+    expect(vault.files.has("6. Inbox/Handwriting/Goodnotes/edited.pdf")).toBe(false);
+  });
+
+  it("fails closed when the target changed after edit start", async () => {
+    const expectedHash = binaryHash(await vault.readBinary(target));
+    target.content = "concurrent change";
+
+    await expect(
+      executeEditReplacementTransaction(makeApp(vault), {
+        replacement: replacement as never,
+        expectedReplacementHash: binaryHash(await vault.readBinary(replacement)),
+        target: target as never,
+        expectedTargetHash: expectedHash,
+        sidecar: sidecar as never,
+        expectedSidecarContent: "old sidecar",
+        updatedSidecarContent: "updated sidecar"
+      })
+    ).rejects.toThrow("Target artifact changed");
+    expect(target.content).toBe("concurrent change");
+    expect(replacement.content).toBe("new export");
+  });
+
+  it("does not replace an artifact with identical content", async () => {
+    replacement.content = target.content;
+    await expect(
+      executeEditReplacementTransaction(makeApp(vault), {
+        replacement: replacement as never,
+        expectedReplacementHash: binaryHash(await vault.readBinary(replacement)),
+        target: target as never,
+        expectedTargetHash: binaryHash(await vault.readBinary(target)),
+        sidecar: sidecar as never,
+        expectedSidecarContent: "old sidecar",
+        updatedSidecarContent: "updated sidecar"
+      })
+    ).rejects.toThrow("identical");
+    expect(vault.files.has(replacement.path)).toBe(true);
+  });
+
+  it("fails closed when the returned export changes after preview", async () => {
+    const previewHash = binaryHash(await vault.readBinary(replacement));
+    replacement.content = "changed after preview";
+    await expect(
+      executeEditReplacementTransaction(makeApp(vault), {
+        replacement: replacement as never,
+        expectedReplacementHash: previewHash,
+        target: target as never,
+        expectedTargetHash: binaryHash(await vault.readBinary(target)),
+        sidecar: sidecar as never,
+        expectedSidecarContent: "old sidecar",
+        updatedSidecarContent: "updated sidecar"
+      })
+    ).rejects.toThrow("Replacement export changed");
+    expect(target.content).toBe("old export");
+    expect(sidecar.content).toBe("old sidecar");
+    expect(vault.files.has(replacement.path)).toBe(true);
+  });
+
+  it("restores the old artifact when sidecar update fails", async () => {
+    vault.failModify = true;
+    await expect(
+      executeEditReplacementTransaction(makeApp(vault), {
+        replacement: replacement as never,
+        expectedReplacementHash: binaryHash(await vault.readBinary(replacement)),
+        target: target as never,
+        expectedTargetHash: binaryHash(await vault.readBinary(target)),
+        sidecar: sidecar as never,
+        expectedSidecarContent: "old sidecar",
+        updatedSidecarContent: "updated sidecar"
+      })
+    ).rejects.toThrow("modify failed");
+    expect(target.content).toBe("old export");
+    expect(sidecar.content).toBe("old sidecar");
+    expect(vault.files.has(replacement.path)).toBe(true);
+  });
+
+  it("rolls target and sidecar back when removing the Inbox export fails", async () => {
+    vault.failDelete = true;
+    await expect(
+      executeEditReplacementTransaction(makeApp(vault), {
+        replacement: replacement as never,
+        expectedReplacementHash: binaryHash(await vault.readBinary(replacement)),
+        target: target as never,
+        expectedTargetHash: binaryHash(await vault.readBinary(target)),
+        sidecar: sidecar as never,
+        expectedSidecarContent: "old sidecar",
+        updatedSidecarContent: "updated sidecar"
+      })
+    ).rejects.toThrow("delete failed");
+    expect(target.content).toBe("old export");
+    expect(sidecar.content).toBe("old sidecar");
+    expect(vault.files.has(replacement.path)).toBe(true);
   });
 });

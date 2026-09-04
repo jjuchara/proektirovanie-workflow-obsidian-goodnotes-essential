@@ -13,4 +13,4 @@
 
 ## Open questions
 
-- Whether Apple Shortcuts can write directly into the ObSync-managed vault on both iPad and iPhone.
+- Whether the original-document edit and full-replacement round trip is verified on MacBook, iPad and iPhone.

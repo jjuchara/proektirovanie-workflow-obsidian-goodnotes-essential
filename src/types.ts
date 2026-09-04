@@ -14,6 +14,16 @@ export interface PendingCapture {
   preferredFormat: CaptureFormat;
 }
 
+export interface PendingEdit {
+  id: string;
+  targetPath: string;
+  targetHash: string;
+  sidecarPath: string;
+  sidecarHash: string;
+  startedAt: number;
+  sourceLink: string;
+}
+
 export interface WorkflowSettings {
   inboxFolder: string;
   projectsFolder: string;
@@ -26,6 +36,7 @@ export interface WorkflowSettings {
 export interface StoredData {
   settings: WorkflowSettings;
   pendingCapture: PendingCapture | null;
+  pendingEdit?: PendingEdit | null;
 }
 
 export interface Destination {

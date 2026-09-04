@@ -25,6 +25,7 @@ const sourceFiles = [
   "src/transaction.ts",
   "src/types.ts",
   "src/ui/modals.ts",
+  "src/core/edit.ts",
   "src/core/paths.ts",
   "src/core/shortcut.ts",
   "src/core/sidecar.ts",

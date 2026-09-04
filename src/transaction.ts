@@ -1,6 +1,7 @@
 import { App, normalizePath, TFile } from "obsidian";
 import { appendBlock, insertAt } from "./core/text";
 import type { InsertionMode } from "./types";
+import { binaryHash } from "./core/edit";
 
 export interface ReviewTransactionInput {
   attachment: TFile;
@@ -17,6 +18,16 @@ export interface ReviewTransactionResult {
   attachment: TFile;
   sidecar: TFile;
   attachmentLink: string;
+}
+
+export interface EditReplacementTransactionInput {
+  replacement: TFile;
+  expectedReplacementHash: string;
+  target: TFile;
+  expectedTargetHash: string;
+  sidecar: TFile;
+  expectedSidecarContent: string;
+  updatedSidecarContent: string;
 }
 
 export async function executeReviewTransaction(
@@ -94,6 +105,61 @@ export async function executeReviewTransaction(
       } catch (rollbackError) {
         rollbackErrors.push(`attachment: ${errorMessage(rollbackError)}`);
       }
+    }
+    const rollbackSuffix = rollbackErrors.length > 0 ? ` Rollback warnings: ${rollbackErrors.join("; ")}` : "";
+    throw new Error(`${errorMessage(error)}${rollbackSuffix}`);
+  }
+}
+
+export async function executeEditReplacementTransaction(
+  app: App,
+  input: EditReplacementTransactionInput
+): Promise<void> {
+  const vault = app.vault;
+  if (input.replacement.path === input.target.path) {
+    throw new Error("Replacement and target must be different files");
+  }
+
+  const targetBefore = await vault.readBinary(input.target);
+  if (binaryHash(targetBefore) !== input.expectedTargetHash) {
+    throw new Error("Target artifact changed after the edit session started");
+  }
+  const sidecarBefore = await vault.read(input.sidecar);
+  if (sidecarBefore !== input.expectedSidecarContent) {
+    throw new Error("Sidecar changed after the edit session started");
+  }
+  const replacementContent = await vault.readBinary(input.replacement);
+  const replacementHash = binaryHash(replacementContent);
+  if (replacementHash !== input.expectedReplacementHash) {
+    throw new Error("Replacement export changed after preview");
+  }
+  if (replacementHash === input.expectedTargetHash) {
+    throw new Error("The returned export is identical to the current artifact");
+  }
+
+  try {
+    await vault.modifyBinary(input.target, replacementContent);
+    await vault.modify(input.sidecar, input.updatedSidecarContent);
+    await vault.delete(input.replacement, true);
+  } catch (error) {
+    const rollbackErrors: string[] = [];
+    try {
+      const current = await vault.read(input.sidecar);
+      if (current === input.updatedSidecarContent) await vault.modify(input.sidecar, sidecarBefore);
+      else if (current !== sidecarBefore) rollbackErrors.push("sidecar changed during rollback and was preserved");
+    } catch (rollbackError) {
+      rollbackErrors.push(`sidecar: ${errorMessage(rollbackError)}`);
+    }
+    try {
+      const current = await vault.readBinary(input.target);
+      const currentHash = binaryHash(current);
+      if (currentHash === binaryHash(replacementContent)) {
+        await vault.modifyBinary(input.target, targetBefore);
+      } else if (currentHash !== input.expectedTargetHash) {
+        rollbackErrors.push("target changed during rollback and was preserved");
+      }
+    } catch (rollbackError) {
+      rollbackErrors.push(`target: ${errorMessage(rollbackError)}`);
     }
     const rollbackSuffix = rollbackErrors.length > 0 ? ` Rollback warnings: ${rollbackErrors.join("; ")}` : "";
     throw new Error(`${errorMessage(error)}${rollbackSuffix}`);

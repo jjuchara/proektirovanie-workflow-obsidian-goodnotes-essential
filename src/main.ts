@@ -14,17 +14,26 @@ import {
   inferDestination,
   isSupportedExport
 } from "./core/paths";
+import {
+  binaryHash,
+  normalizeGoodnotesSourceLink,
+  readSidecarProvenance,
+  updateSidecarAfterEdit
+} from "./core/edit";
 import { buildSidecar } from "./core/sidecar";
 import { buildShortcutUrl } from "./core/shortcut";
 import { contentHash } from "./core/text";
 import { DEFAULT_SETTINGS, WorkflowSettingTab } from "./settings";
-import { executeReviewTransaction } from "./transaction";
-import type { PendingCapture, StoredData, WorkflowSettings } from "./types";
+import { executeEditReplacementTransaction, executeReviewTransaction } from "./transaction";
+import type { PendingCapture, PendingEdit, StoredData, WorkflowSettings } from "./types";
 import {
   ConfirmAbandonModal,
+  ConfirmAbandonEditModal,
+  ConfirmEditReplacementModal,
   ExistingCaptureModal,
   ExportPickerModal,
   FinishReviewModal,
+  GoodnotesSourceLinkModal,
   StartCaptureModal,
   type ExistingCaptureAction,
   type FinishReviewInput,
@@ -34,6 +43,7 @@ import {
 export default class GoodnotesWorkflowPlugin extends Plugin {
   settings: WorkflowSettings = DEFAULT_SETTINGS;
   private pendingCapture: PendingCapture | null = null;
+  private pendingEdit: PendingEdit | null = null;
   private detectedExportPath: string | null = null;
   private finishInProgress = false;
 
@@ -74,15 +84,52 @@ export default class GoodnotesWorkflowPlugin extends Plugin {
         return true;
       }
     });
+    this.addCommand({
+      id: "edit-goodnotes-artifact",
+      name: "Рукописный ввод: редактировать сохранённый файл",
+      callback: () => void this.startEdit()
+    });
+    this.addCommand({
+      id: "resume-goodnotes-edit",
+      name: "Рукописный ввод: вернуться к редактированию в Goodnotes",
+      checkCallback: (checking) => {
+        if (this.pendingEdit === null) return false;
+        if (!checking) this.openGoodnotesSource(this.pendingEdit.sourceLink);
+        return true;
+      }
+    });
+    this.addCommand({
+      id: "finish-goodnotes-edit",
+      name: "Рукописный ввод: заменить отредактированный файл",
+      checkCallback: (checking) => {
+        if (this.pendingEdit === null) return false;
+        if (!checking) void this.finishEdit();
+        return true;
+      }
+    });
+    this.addCommand({
+      id: "abandon-goodnotes-edit",
+      name: "Рукописный ввод: отменить редактирование",
+      checkCallback: (checking) => {
+        if (this.pendingEdit === null) return false;
+        if (!checking) void this.abandonEdit();
+        return true;
+      }
+    });
 
     this.registerEvent(
       this.app.vault.on("create", (file) => {
-        if (!(file instanceof TFile) || !this.isCandidateForPendingCapture(file)) return;
+        if (!(file instanceof TFile)) return;
+        const captureCandidate = this.isCandidateForPendingCapture(file);
+        const editCandidate = this.isCandidateForPendingEdit(file);
+        if (!captureCandidate && !editCandidate) return;
         this.detectedExportPath = file.path;
         new Notice("Обнаружен экспорт Goodnotes. Открываю preview…");
         window.setTimeout(() => {
-          if (this.pendingCapture !== null && this.detectedExportPath === file.path) {
+          if (captureCandidate && this.pendingCapture !== null && this.detectedExportPath === file.path) {
             void this.finishCapture();
+          } else if (editCandidate && this.pendingEdit !== null && this.detectedExportPath === file.path) {
+            void this.finishEdit();
           }
         }, 500);
       })
@@ -90,7 +137,11 @@ export default class GoodnotesWorkflowPlugin extends Plugin {
   }
 
   async persistState(): Promise<void> {
-    const data: StoredData = { settings: this.settings, pendingCapture: this.pendingCapture };
+    const data: StoredData = {
+      settings: this.settings,
+      pendingCapture: this.pendingCapture,
+      pendingEdit: this.pendingEdit
+    };
     await this.saveData(data);
   }
 
@@ -98,9 +149,14 @@ export default class GoodnotesWorkflowPlugin extends Plugin {
     const loaded = (await this.loadData()) as Partial<StoredData> | null;
     this.settings = { ...DEFAULT_SETTINGS, ...(loaded?.settings ?? {}) };
     this.pendingCapture = loaded?.pendingCapture ?? null;
+    this.pendingEdit = loaded?.pendingEdit ?? null;
   }
 
   private async startCapture(): Promise<void> {
+    if (this.pendingEdit !== null) {
+      new Notice("Сначала завершите или отмените редактирование сохранённого файла.");
+      return;
+    }
     if (this.pendingCapture !== null) {
       const action = await this.openExistingCaptureModal(this.pendingCapture);
       await this.handleExistingCaptureAction(action);
@@ -171,6 +227,210 @@ export default class GoodnotesWorkflowPlugin extends Plugin {
     new Notice("Рукописная сессия отменена. Файлы в Inbox сохранены.");
   }
 
+  private async startEdit(): Promise<void> {
+    if (this.pendingCapture !== null) {
+      new Notice("Сначала завершите или отмените текущую рукописную сессию.");
+      return;
+    }
+    if (this.pendingEdit !== null) {
+      new Notice("Редактирование уже активно. Используйте команду возврата или завершения.");
+      return;
+    }
+
+    const target = await this.resolveEditTarget();
+    if (target === null) return;
+    const sidecarContent = await this.app.vault.read(target.sidecar);
+    const provenance = readSidecarProvenance(sidecarContent);
+    let sourceLink =
+      provenance.sourceLink === null ? null : normalizeGoodnotesSourceLink(provenance.sourceLink);
+    if (sourceLink === null) {
+      const entered = await this.openSourceLinkModal(provenance.sourceLink ?? "");
+      if (entered === null) return;
+      sourceLink = normalizeGoodnotesSourceLink(entered);
+      if (sourceLink === null) {
+        new Notice("Укажите корректную HTTPS-ссылку Goodnotes.");
+        return;
+      }
+    }
+
+    const targetHash = binaryHash(await this.app.vault.readBinary(target.artifact));
+    this.pendingEdit = {
+      id: createCaptureId(),
+      targetPath: target.artifact.path,
+      targetHash,
+      sidecarPath: target.sidecar.path,
+      sidecarHash: contentHash(sidecarContent),
+      startedAt: Date.now(),
+      sourceLink
+    };
+    this.detectedExportPath = null;
+    try {
+      await this.persistState();
+    } catch (error) {
+      this.pendingEdit = null;
+      new Notice(`Не удалось сохранить edit-сессию: ${errorMessage(error)}`);
+      return;
+    }
+    this.openGoodnotesSource(sourceLink);
+  }
+
+  private openGoodnotesSource(sourceLink: string): void {
+    window.open(sourceLink, "_blank");
+  }
+
+  private async abandonEdit(): Promise<void> {
+    const edit = this.pendingEdit;
+    if (edit === null) return;
+    const confirmed = await this.openConfirmAbandonEditModal(edit);
+    if (!confirmed) return;
+    this.pendingEdit = null;
+    this.detectedExportPath = null;
+    await this.persistState();
+    new Notice("Редактирование отменено. Артефакт и файлы Inbox сохранены.");
+  }
+
+  private async finishEdit(): Promise<void> {
+    if (this.finishInProgress) return;
+    this.finishInProgress = true;
+    try {
+      await this.finishEditInternal();
+    } finally {
+      this.finishInProgress = false;
+    }
+  }
+
+  private async finishEditInternal(): Promise<void> {
+    const edit = this.pendingEdit;
+    if (edit === null) {
+      new Notice("Нет активного редактирования Goodnotes.");
+      return;
+    }
+    const target = this.app.vault.getAbstractFileByPath(edit.targetPath);
+    const sidecar = this.app.vault.getAbstractFileByPath(edit.sidecarPath);
+    if (!(target instanceof TFile) || !(sidecar instanceof TFile)) {
+      new Notice("Связанный артефакт или sidecar не найден. Edit-сессия сохранена.");
+      return;
+    }
+
+    const candidates = this.findEditExportCandidates(edit, target.extension);
+    const replacement = await this.selectExport(
+      candidates,
+      "Выберите новый экспорт, который полностью заменит текущий файл"
+    );
+    if (replacement === null) {
+      if (candidates.length === 0) new Notice("В Inbox не найден новый экспорт подходящего формата.");
+      return;
+    }
+    if (!extensionsCompatible(target.extension, replacement.extension)) {
+      new Notice("Новый экспорт должен иметь тот же формат, что и текущий файл.");
+      return;
+    }
+
+    const confirmed = await this.openConfirmEditReplacementModal(target.path, replacement.path);
+    if (!confirmed) return;
+    const sidecarContent = await this.app.vault.read(sidecar);
+    if (contentHash(sidecarContent) !== edit.sidecarHash) {
+      new Notice("Sidecar изменился после начала edit-сессии. Замена остановлена.");
+      return;
+    }
+    const replacementHash = binaryHash(await this.app.vault.readBinary(replacement));
+    let updatedSidecar: string;
+    try {
+      updatedSidecar = updateSidecarAfterEdit(sidecarContent, {
+        sourceLink: edit.sourceLink,
+        artifactPath: target.path,
+        artifactHash: replacementHash,
+        editedAt: new Date().toISOString()
+      });
+      await executeEditReplacementTransaction(this.app, {
+        replacement,
+        expectedReplacementHash: replacementHash,
+        target,
+        expectedTargetHash: edit.targetHash,
+        sidecar,
+        expectedSidecarContent: sidecarContent,
+        updatedSidecarContent: updatedSidecar
+      });
+    } catch (error) {
+      new Notice(`Не удалось заменить экспорт: ${errorMessage(error)}`, 10_000);
+      return;
+    }
+
+    this.pendingEdit = null;
+    this.detectedExportPath = null;
+    try {
+      await this.persistState();
+      new Notice(`Экспорт Goodnotes заменён: ${target.path}`);
+    } catch (error) {
+      new Notice(
+        `Экспорт заменён, но служебное состояние не записано: ${errorMessage(error)}. Проверьте Inbox перед повтором.`,
+        10_000
+      );
+    }
+  }
+
+  private async resolveEditTarget(): Promise<{ artifact: TFile; sidecar: TFile } | null> {
+    const active = this.app.workspace.getActiveFile();
+    if (!(active instanceof TFile)) {
+      new Notice("Откройте сохранённый экспорт, его sidecar или заметку с embed.");
+      return null;
+    }
+
+    if (isSupportedExport(active.path)) {
+      const sidecar = await this.sidecarForArtifact(active);
+      if (sidecar !== null) return { artifact: active, sidecar };
+    }
+    if (active.extension !== "md") {
+      new Notice("Для выбранного файла не найден Markdown-sidecar.");
+      return null;
+    }
+
+    const candidates = new Map<string, TFile>();
+    const content = await this.app.vault.read(active);
+    const provenance = readSidecarProvenance(content);
+    if (provenance.artifactPath !== null) {
+      const artifact = this.app.vault.getAbstractFileByPath(normalizePath(provenance.artifactPath));
+      if (artifact instanceof TFile && isSupportedExport(artifact.path)) candidates.set(artifact.path, artifact);
+    }
+    for (const extension of ["pdf", "png", "jpg", "jpeg"]) {
+      const sibling = this.app.vault.getAbstractFileByPath(`${active.path.slice(0, -3)}.${extension}`);
+      if (sibling instanceof TFile) candidates.set(sibling.path, sibling);
+    }
+    const embeds = this.app.metadataCache.getFileCache(active)?.embeds ?? [];
+    for (const embed of embeds) {
+      const artifact = this.app.metadataCache.getFirstLinkpathDest(embed.link, active.path);
+      if (
+        artifact instanceof TFile &&
+        isSupportedExport(artifact.path) &&
+        (await this.sidecarForArtifact(artifact)) !== null
+      ) {
+        candidates.set(artifact.path, artifact);
+      }
+    }
+
+    const files: TFile[] = [];
+    for (const candidate of candidates.values()) {
+      if ((await this.sidecarForArtifact(candidate)) !== null) files.push(candidate);
+    }
+    const artifact = await this.selectExport(files, "Выберите сохранённый артефакт Goodnotes");
+    if (artifact === null) {
+      if (files.length === 0) new Notice("В текущей заметке не найден связанный артефакт Goodnotes.");
+      return null;
+    }
+    const sidecar = await this.sidecarForArtifact(artifact);
+    return sidecar === null ? null : { artifact, sidecar };
+  }
+
+  private async sidecarForArtifact(artifact: TFile): Promise<TFile | null> {
+    const sidecarPath = `${artifact.path.slice(0, -(artifact.extension.length + 1))}.md`;
+    const sidecar = this.app.vault.getAbstractFileByPath(sidecarPath);
+    if (!(sidecar instanceof TFile) || sidecar.extension !== "md") return null;
+    const sourceApp = this.app.metadataCache.getFileCache(sidecar)?.frontmatter?.source_app;
+    if (sourceApp === "Goodnotes") return sidecar;
+    const content = await this.app.vault.read(sidecar);
+    return /^source_app:\s*Goodnotes\s*$/m.test(content) ? sidecar : null;
+  }
+
   private async finishCapture(): Promise<void> {
     if (this.finishInProgress) return;
     this.finishInProgress = true;
@@ -217,6 +477,12 @@ export default class GoodnotesWorkflowPlugin extends Plugin {
         `${destination.directory}/${buildBaseName(captured, artifact, context)}.${extension}`
     });
     if (review === null) return;
+    const sourceLink =
+      review.sourceLink.length === 0 ? null : normalizeGoodnotesSourceLink(review.sourceLink);
+    if (review.sourceLink.length > 0 && sourceLink === null) {
+      new Notice("Укажите корректную HTTPS-ссылку Goodnotes.");
+      return;
+    }
 
     const currentSourceContent = await this.app.vault.read(sourceNote);
     if (currentSourceContent !== sourceContent) {
@@ -251,6 +517,7 @@ export default class GoodnotesWorkflowPlugin extends Plugin {
           : null;
 
     const title = basenameWithoutExtension(unique.attachmentPath);
+    const attachmentHash = binaryHash(await this.app.vault.readBinary(attachment));
     try {
       await executeReviewTransaction(this.app, {
         attachment,
@@ -268,7 +535,10 @@ export default class GoodnotesWorkflowPlugin extends Plugin {
             projectNote,
             captured,
             sourceNote: sourceNote.path,
-            attachmentLink
+            attachmentLink,
+            attachmentPath: unique.attachmentPath,
+            attachmentHash,
+            sourceLink
           })
       });
     } catch (error) {
@@ -341,10 +611,42 @@ export default class GoodnotesWorkflowPlugin extends Plugin {
     return file.path.startsWith(`${inbox}/`) && file.stat.ctime >= this.pendingCapture.startedAt - 60_000;
   }
 
-  private async selectExport(files: TFile[]): Promise<TFile | null> {
+  private findEditExportCandidates(edit: PendingEdit, targetExtension: string): TFile[] {
+    const inbox = normalizePath(this.settings.inboxFolder);
+    const all = this.app.vault
+      .getFiles()
+      .filter((file) => file.path.startsWith(`${inbox}/`) && isSupportedExport(file.path))
+      .filter((file) => file.path !== edit.targetPath && extensionsCompatible(targetExtension, file.extension))
+      .sort((left, right) => right.stat.ctime - left.stat.ctime);
+
+    if (this.detectedExportPath !== null) {
+      const detected = all.find((file) => file.path === this.detectedExportPath);
+      if (detected !== undefined) return [detected];
+    }
+    const recent = all.filter((file) => file.stat.ctime >= edit.startedAt - 60_000);
+    return recent.length > 0 ? recent : all;
+  }
+
+  private isCandidateForPendingEdit(file: TFile): boolean {
+    if (this.pendingEdit === null || !isSupportedExport(file.path)) return false;
+    const targetExtension = extensionOf(this.pendingEdit.targetPath);
+    const inbox = normalizePath(this.settings.inboxFolder);
+    return (
+      file.path.startsWith(`${inbox}/`) &&
+      extensionsCompatible(targetExtension, file.extension) &&
+      file.stat.ctime >= this.pendingEdit.startedAt - 60_000
+    );
+  }
+
+  private async selectExport(
+    files: TFile[],
+    placeholder = "Выберите экспорт Goodnotes для review"
+  ): Promise<TFile | null> {
     if (files.length === 0) return null;
     if (files.length === 1) return files[0] ?? null;
-    return await new Promise((resolve) => new ExportPickerModal(this.app, files, resolve).open());
+    return await new Promise((resolve) =>
+      new ExportPickerModal(this.app, files, resolve, placeholder).open()
+    );
   }
 
   private async openStartModal(sourcePath: string, title: string): Promise<StartCaptureInput | null> {
@@ -357,6 +659,27 @@ export default class GoodnotesWorkflowPlugin extends Plugin {
 
   private async openConfirmAbandonModal(capture: PendingCapture): Promise<boolean> {
     return await new Promise((resolve) => new ConfirmAbandonModal(this.app, capture, resolve).open());
+  }
+
+  private async openSourceLinkModal(initialValue: string): Promise<string | null> {
+    return await new Promise((resolve) =>
+      new GoodnotesSourceLinkModal(this.app, initialValue, resolve).open()
+    );
+  }
+
+  private async openConfirmEditReplacementModal(
+    targetPath: string,
+    replacementPath: string
+  ): Promise<boolean> {
+    return await new Promise((resolve) =>
+      new ConfirmEditReplacementModal(this.app, targetPath, replacementPath, resolve).open()
+    );
+  }
+
+  private async openConfirmAbandonEditModal(edit: PendingEdit): Promise<boolean> {
+    return await new Promise((resolve) =>
+      new ConfirmAbandonEditModal(this.app, edit, resolve).open()
+    );
   }
 
   private async openFinishModal(input: {
@@ -388,4 +711,12 @@ function createCaptureId(): string {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function extensionsCompatible(left: string, right: string): boolean {
+  const normalize = (value: string): string => {
+    const extension = value.toLowerCase();
+    return extension === "jpg" || extension === "jpeg" ? "jpeg" : extension;
+  };
+  return normalize(left) === normalize(right);
 }

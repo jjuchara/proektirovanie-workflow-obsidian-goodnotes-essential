@@ -6,7 +6,7 @@ import {
   Setting,
   TFile
 } from "obsidian";
-import type { CaptureFormat, InsertionMode, PendingCapture } from "../types";
+import type { CaptureFormat, InsertionMode, PendingCapture, PendingEdit } from "../types";
 
 export interface StartCaptureInput {
   title: string;
@@ -143,10 +143,11 @@ export class ExportPickerModal extends FuzzySuggestModal<TFile> {
   constructor(
     app: App,
     private readonly files: TFile[],
-    private readonly resolve: (value: TFile | null) => void
+    private readonly resolve: (value: TFile | null) => void,
+    placeholder = "Выберите экспорт Goodnotes для review"
   ) {
     super(app);
-    this.setPlaceholder("Выберите экспорт Goodnotes для review");
+    this.setPlaceholder(placeholder);
   }
 
   getItems(): TFile[] {
@@ -172,6 +173,7 @@ export interface FinishReviewInput {
   artifact: string;
   context: string;
   insertionMode: InsertionMode;
+  sourceLink: string;
 }
 
 export class FinishReviewModal extends Modal {
@@ -194,6 +196,7 @@ export class FinishReviewModal extends Modal {
     this.setTitle("Завершить рукописный ввод");
     let artifact = "Handwriting";
     let context = this.suggestedContext;
+    let sourceLink = "";
     let insertionMode: InsertionMode = this.noteChanged
       ? this.canUseCurrentCursor
         ? "current-cursor"
@@ -226,6 +229,14 @@ export class FinishReviewModal extends Modal {
         refreshPreview();
       })
     );
+    new Setting(this.contentEl)
+      .setName("Ссылка на исходник Goodnotes")
+      .setDesc("Необязательно. На Essential share link доступен любому, у кого есть ссылка.")
+      .addText((text) =>
+        text.setPlaceholder("https://share.goodnotes.com/...").onChange((value) => {
+          sourceLink = value;
+        })
+      );
     new Setting(this.contentEl).setName("Вставка в исходную заметку").addDropdown((dropdown) => {
       if (!this.noteChanged) dropdown.addOption("saved-cursor", "Сохранённая позиция курсора");
       if (this.canUseCurrentCursor) dropdown.addOption("current-cursor", "Текущая позиция курсора");
@@ -245,7 +256,8 @@ export class FinishReviewModal extends Modal {
         this.finish({
           artifact: artifact.trim() || "Handwriting",
           context: context.trim() || this.suggestedContext,
-          insertionMode
+          insertionMode,
+          sourceLink: sourceLink.trim()
         })
       );
   }
@@ -256,6 +268,123 @@ export class FinishReviewModal extends Modal {
   }
 
   private finish(value: FinishReviewInput | null): void {
+    this.settled = true;
+    this.resolve(value);
+    this.close();
+  }
+}
+
+export class GoodnotesSourceLinkModal extends Modal {
+  private settled = false;
+
+  constructor(
+    app: App,
+    private readonly initialValue: string,
+    private readonly resolve: (value: string | null) => void
+  ) {
+    super(app);
+  }
+
+  onOpen(): void {
+    this.setTitle("Связать с исходником Goodnotes");
+    let sourceLink = this.initialValue;
+    this.contentEl.createEl("p", {
+      cls: "goodnotes-workflow-warning",
+      text: "Goodnotes Essential создаёт публичную share link: документ доступен любому, у кого есть ссылка."
+    });
+    new Setting(this.contentEl).setName("Goodnotes share link").addText((text) =>
+      text
+        .setPlaceholder("https://share.goodnotes.com/...")
+        .setValue(sourceLink)
+        .onChange((value) => {
+          sourceLink = value;
+        })
+    );
+    const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
+    new ButtonComponent(actions).setButtonText("Отмена").onClick(() => this.finish(null));
+    new ButtonComponent(actions)
+      .setButtonText("Открыть исходник")
+      .setCta()
+      .onClick(() => this.finish(sourceLink.trim()));
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
+    if (!this.settled) this.resolve(null);
+  }
+
+  private finish(value: string | null): void {
+    this.settled = true;
+    this.resolve(value);
+    this.close();
+  }
+}
+
+export class ConfirmEditReplacementModal extends Modal {
+  private settled = false;
+
+  constructor(
+    app: App,
+    private readonly targetPath: string,
+    private readonly replacementPath: string,
+    private readonly resolve: (value: boolean) => void
+  ) {
+    super(app);
+  }
+
+  onOpen(): void {
+    this.setTitle("Заменить экспорт Goodnotes?");
+    this.contentEl.createEl("p", { text: `Текущий файл: ${this.targetPath}` });
+    this.contentEl.createEl("p", { text: `Новый экспорт: ${this.replacementPath}` });
+    this.contentEl.createEl("p", {
+      cls: "goodnotes-workflow-warning",
+      text: "После подтверждения текущий файл будет полностью заменён. Постоянная копия предыдущей версии не сохраняется."
+    });
+    const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
+    new ButtonComponent(actions).setButtonText("Отмена").onClick(() => this.finish(false));
+    new ButtonComponent(actions).setButtonText("Заменить").setWarning().onClick(() => this.finish(true));
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
+    if (!this.settled) this.resolve(false);
+  }
+
+  private finish(value: boolean): void {
+    this.settled = true;
+    this.resolve(value);
+    this.close();
+  }
+}
+
+export class ConfirmAbandonEditModal extends Modal {
+  private settled = false;
+
+  constructor(
+    app: App,
+    private readonly edit: PendingEdit,
+    private readonly resolve: (value: boolean) => void
+  ) {
+    super(app);
+  }
+
+  onOpen(): void {
+    this.setTitle("Отменить редактирование в Goodnotes?");
+    this.contentEl.createEl("p", {
+      text: "Удалится только pending-запись. Текущий артефакт и файлы в Inbox останутся без изменений."
+    });
+    this.contentEl.createEl("small", { text: this.edit.targetPath });
+    const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
+    new ButtonComponent(actions).setButtonText("Сохранить сессию").onClick(() => this.finish(false));
+    new ButtonComponent(actions).setButtonText("Отменить сессию").setWarning().onClick(() => this.finish(true));
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
+    if (!this.settled) this.resolve(false);
+  }
+
+  private finish(value: boolean): void {
     this.settled = true;
     this.resolve(value);
     this.close();
