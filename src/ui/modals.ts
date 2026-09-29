@@ -6,6 +6,7 @@ import {
   Setting,
   TFile
 } from "obsidian";
+import { t } from "../i18n";
 import type { CaptureFormat, InsertionMode, PendingCapture, PendingEdit } from "../types";
 
 export interface StartCaptureInput {
@@ -26,21 +27,21 @@ export class StartCaptureModal extends Modal {
   }
 
   onOpen(): void {
-    this.setTitle("Начать рукописный ввод");
+    this.setTitle(t.startTitle);
     let title = this.initialTitle;
     let preferredFormat: CaptureFormat = "png";
 
-    this.contentEl.createEl("p", { text: `Исходная заметка: ${this.sourcePath}` });
-    new Setting(this.contentEl).setName("Название").addText((text) =>
+    this.contentEl.createEl("p", { text: t.sourceNote(this.sourcePath) });
+    new Setting(this.contentEl).setName(t.title).addText((text) =>
       text.setValue(title).onChange((value) => {
         title = value;
       })
     );
-    new Setting(this.contentEl).setName("Предпочтительный экспорт").addDropdown((dropdown) =>
+    new Setting(this.contentEl).setName(t.preferredExport).addDropdown((dropdown) =>
       dropdown
-        .addOption("png", "PNG — одна визуальная мысль")
-        .addOption("pdf", "PDF — полный контекст")
-        .addOption("jpeg", "JPEG — фотографический материал")
+        .addOption("png", t.formatPng)
+        .addOption("pdf", t.formatPdf)
+        .addOption("jpeg", t.formatJpeg)
         .setValue(preferredFormat)
         .onChange((value) => {
           preferredFormat = value as CaptureFormat;
@@ -48,9 +49,9 @@ export class StartCaptureModal extends Modal {
     );
 
     const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
-    new ButtonComponent(actions).setButtonText("Отмена").onClick(() => this.finish(null));
+    new ButtonComponent(actions).setButtonText(t.cancel).onClick(() => this.finish(null));
     new ButtonComponent(actions)
-      .setButtonText("Начать")
+      .setButtonText(t.start)
       .setCta()
       .onClick(() => this.finish({ title: title.trim() || this.initialTitle, preferredFormat }));
   }
@@ -81,14 +82,14 @@ export class ExistingCaptureModal extends Modal {
   }
 
   onOpen(): void {
-    this.setTitle("Рукописная сессия уже активна");
+    this.setTitle(t.existingTitle);
     this.contentEl.createEl("p", { text: this.capture.title });
     this.contentEl.createEl("small", { text: this.capture.sourcePath });
     const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
-    new ButtonComponent(actions).setButtonText("Закрыть").onClick(() => this.finish(null));
-    new ButtonComponent(actions).setButtonText("Отменить сессию…").setWarning().onClick(() => this.finish("abandon"));
-    new ButtonComponent(actions).setButtonText("Завершить").onClick(() => this.finish("finish"));
-    new ButtonComponent(actions).setButtonText("Вернуться в Goodnotes").setCta().onClick(() => this.finish("resume"));
+    new ButtonComponent(actions).setButtonText(t.close).onClick(() => this.finish(null));
+    warningButton(actions, t.abandonSessionEllipsis).onClick(() => this.finish("abandon"));
+    new ButtonComponent(actions).setButtonText(t.finish).onClick(() => this.finish("finish"));
+    new ButtonComponent(actions).setButtonText(t.returnToGoodnotes).setCta().onClick(() => this.finish("resume"));
   }
 
   onClose(): void {
@@ -115,14 +116,14 @@ export class ConfirmAbandonModal extends Modal {
   }
 
   onOpen(): void {
-    this.setTitle("Отменить рукописную сессию?");
+    this.setTitle(t.abandonCaptureTitle);
     this.contentEl.createEl("p", {
-      text: "Удалится только pending-запись. Экспортированные файлы останутся в Inbox."
+      text: t.abandonCaptureBody
     });
     this.contentEl.createEl("small", { text: this.capture.sourcePath });
     const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
-    new ButtonComponent(actions).setButtonText("Сохранить сессию").onClick(() => this.finish(false));
-    new ButtonComponent(actions).setButtonText("Отменить сессию").setWarning().onClick(() => this.finish(true));
+    new ButtonComponent(actions).setButtonText(t.keepSession).onClick(() => this.finish(false));
+    warningButton(actions, t.abandonSession).onClick(() => this.finish(true));
   }
 
   onClose(): void {
@@ -144,7 +145,7 @@ export class ExportPickerModal extends FuzzySuggestModal<TFile> {
     app: App,
     private readonly files: TFile[],
     private readonly resolve: (value: TFile | null) => void,
-    placeholder = "Выберите экспорт Goodnotes для review"
+    placeholder = t.pickExport
   ) {
     super(app);
     this.setPlaceholder(placeholder);
@@ -193,7 +194,7 @@ export class FinishReviewModal extends Modal {
   }
 
   onOpen(): void {
-    this.setTitle("Завершить рукописный ввод");
+    this.setTitle(t.finishTitle);
     let artifact = "Handwriting";
     let context = this.suggestedContext;
     let sourceLink = "";
@@ -203,12 +204,12 @@ export class FinishReviewModal extends Modal {
         : "end"
       : "saved-cursor";
 
-    this.contentEl.createEl("p", { text: `Исходная заметка: ${this.sourcePath}` });
-    this.contentEl.createEl("p", { text: `Экспорт: ${this.exportPath}` });
+    this.contentEl.createEl("p", { text: t.sourceNote(this.sourcePath) });
+    this.contentEl.createEl("p", { text: t.exportPath(this.exportPath) });
     if (this.noteChanged) {
       this.contentEl.createEl("p", {
         cls: "goodnotes-workflow-warning",
-        text: "Исходная заметка изменилась, пока Goodnotes был открыт. Явно выберите место вставки."
+        text: t.noteChangedWarning
       });
     }
 
@@ -217,30 +218,30 @@ export class FinishReviewModal extends Modal {
       preview.setText(this.previewPath(artifact, context));
     };
 
-    new Setting(this.contentEl).setName("Тип артефакта").addText((text) =>
+    new Setting(this.contentEl).setName(t.artifactType).addText((text) =>
       text.setValue(artifact).onChange((value) => {
         artifact = value;
         refreshPreview();
       })
     );
-    new Setting(this.contentEl).setName("Контекст").addText((text) =>
+    new Setting(this.contentEl).setName(t.context).addText((text) =>
       text.setValue(context).onChange((value) => {
         context = value;
         refreshPreview();
       })
     );
     new Setting(this.contentEl)
-      .setName("Ссылка на исходник Goodnotes")
-      .setDesc("Необязательно. На Essential share link доступен любому, у кого есть ссылка.")
+      .setName(t.sourceLink)
+      .setDesc(t.sourceLinkDesc)
       .addText((text) =>
-        text.setPlaceholder("https://share.goodnotes.com/...").onChange((value) => {
+        text.setPlaceholder(t.shareLinkPlaceholder).onChange((value) => {
           sourceLink = value;
         })
       );
-    new Setting(this.contentEl).setName("Вставка в исходную заметку").addDropdown((dropdown) => {
-      if (!this.noteChanged) dropdown.addOption("saved-cursor", "Сохранённая позиция курсора");
-      if (this.canUseCurrentCursor) dropdown.addOption("current-cursor", "Текущая позиция курсора");
-      dropdown.addOption("end", "Конец заметки").addOption("sidecar-only", "Только sidecar");
+    new Setting(this.contentEl).setName(t.insertion).addDropdown((dropdown) => {
+      if (!this.noteChanged) dropdown.addOption("saved-cursor", t.insertionSavedCursor);
+      if (this.canUseCurrentCursor) dropdown.addOption("current-cursor", t.insertionCurrentCursor);
+      dropdown.addOption("end", t.insertionEnd).addOption("sidecar-only", t.insertionSidecarOnly);
       dropdown.setValue(insertionMode).onChange((value) => {
         insertionMode = value as InsertionMode;
       });
@@ -248,9 +249,9 @@ export class FinishReviewModal extends Modal {
 
     refreshPreview();
     const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
-    new ButtonComponent(actions).setButtonText("Отмена").onClick(() => this.finish(null));
+    new ButtonComponent(actions).setButtonText(t.cancel).onClick(() => this.finish(null));
     new ButtonComponent(actions)
-      .setButtonText("Подтвердить")
+      .setButtonText(t.confirm)
       .setCta()
       .onClick(() =>
         this.finish({
@@ -286,24 +287,24 @@ export class GoodnotesSourceLinkModal extends Modal {
   }
 
   onOpen(): void {
-    this.setTitle("Связать с исходником Goodnotes");
+    this.setTitle(t.linkTitle);
     let sourceLink = this.initialValue;
     this.contentEl.createEl("p", {
       cls: "goodnotes-workflow-warning",
-      text: "Goodnotes Essential создаёт публичную share link: документ доступен любому, у кого есть ссылка."
+      text: t.linkWarning
     });
-    new Setting(this.contentEl).setName("Goodnotes share link").addText((text) =>
+    new Setting(this.contentEl).setName(t.shareLink).addText((text) =>
       text
-        .setPlaceholder("https://share.goodnotes.com/...")
+        .setPlaceholder(t.shareLinkPlaceholder)
         .setValue(sourceLink)
         .onChange((value) => {
           sourceLink = value;
         })
     );
     const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
-    new ButtonComponent(actions).setButtonText("Отмена").onClick(() => this.finish(null));
+    new ButtonComponent(actions).setButtonText(t.cancel).onClick(() => this.finish(null));
     new ButtonComponent(actions)
-      .setButtonText("Открыть исходник")
+      .setButtonText(t.openOriginal)
       .setCta()
       .onClick(() => this.finish(sourceLink.trim()));
   }
@@ -333,16 +334,16 @@ export class ConfirmEditReplacementModal extends Modal {
   }
 
   onOpen(): void {
-    this.setTitle("Заменить экспорт Goodnotes?");
-    this.contentEl.createEl("p", { text: `Текущий файл: ${this.targetPath}` });
-    this.contentEl.createEl("p", { text: `Новый экспорт: ${this.replacementPath}` });
+    this.setTitle(t.replaceTitle);
+    this.contentEl.createEl("p", { text: t.currentFile(this.targetPath) });
+    this.contentEl.createEl("p", { text: t.newExport(this.replacementPath) });
     this.contentEl.createEl("p", {
       cls: "goodnotes-workflow-warning",
-      text: "После подтверждения текущий файл будет полностью заменён. Постоянная копия предыдущей версии не сохраняется."
+      text: t.replaceWarning
     });
     const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
-    new ButtonComponent(actions).setButtonText("Отмена").onClick(() => this.finish(false));
-    new ButtonComponent(actions).setButtonText("Заменить").setWarning().onClick(() => this.finish(true));
+    new ButtonComponent(actions).setButtonText(t.cancel).onClick(() => this.finish(false));
+    warningButton(actions, t.replace).onClick(() => this.finish(true));
   }
 
   onClose(): void {
@@ -369,14 +370,14 @@ export class ConfirmAbandonEditModal extends Modal {
   }
 
   onOpen(): void {
-    this.setTitle("Отменить редактирование в Goodnotes?");
+    this.setTitle(t.abandonEditTitle);
     this.contentEl.createEl("p", {
-      text: "Удалится только pending-запись. Текущий артефакт и файлы в Inbox останутся без изменений."
+      text: t.abandonEditBody
     });
     this.contentEl.createEl("small", { text: this.edit.targetPath });
     const actions = this.contentEl.createDiv({ cls: "goodnotes-workflow-actions" });
-    new ButtonComponent(actions).setButtonText("Сохранить сессию").onClick(() => this.finish(false));
-    new ButtonComponent(actions).setButtonText("Отменить сессию").setWarning().onClick(() => this.finish(true));
+    new ButtonComponent(actions).setButtonText(t.keepSession).onClick(() => this.finish(false));
+    warningButton(actions, t.abandonSession).onClick(() => this.finish(true));
   }
 
   onClose(): void {
@@ -389,4 +390,11 @@ export class ConfirmAbandonEditModal extends Modal {
     this.resolve(value);
     this.close();
   }
+}
+
+// ButtonComponent.setWarning() is deprecated, and its replacement setDestructive() needs Obsidian 1.13.
+function warningButton(container: HTMLElement, text: string): ButtonComponent {
+  const button = new ButtonComponent(container).setButtonText(text);
+  button.buttonEl.addClass("mod-warning");
+  return button;
 }

@@ -20,6 +20,7 @@ export function basenameWithoutExtension(path: string): string {
 
 export function sanitizeSegment(value: string, fallback = "Handwriting"): string {
   const sanitized = value
+    // eslint-disable-next-line no-control-regex -- control characters are invalid in file names
     .replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ")
     .replace(/\s+/g, " ")
     .trim()

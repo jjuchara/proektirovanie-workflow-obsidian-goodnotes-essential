@@ -68,7 +68,11 @@ export async function executeReviewTransaction(
         input.insertionMode === "end"
           ? appendBlock(sourceBefore, attachmentLink)
           : insertAt(sourceBefore, offset, attachmentLink);
-      await vault.modify(input.sourceNote, sourceAfter);
+      const expected = sourceAfter;
+      await vault.process(input.sourceNote, (current) => {
+        if (current !== sourceBefore) throw new Error("Source note changed during confirmation.");
+        return expected;
+      });
     }
 
     return { attachment: input.attachment, sidecar, attachmentLink };
@@ -76,9 +80,10 @@ export async function executeReviewTransaction(
     const rollbackErrors: string[] = [];
     if (sourceAfter !== null) {
       try {
-        const current = await vault.read(input.sourceNote);
-        if (current === sourceAfter) await vault.modify(input.sourceNote, sourceBefore);
-        else rollbackErrors.push("source note changed during rollback and was preserved");
+        const written = sourceAfter;
+        if (!(await restoreIfUnchanged(app, input.sourceNote, written, sourceBefore))) {
+          rollbackErrors.push("source note changed during rollback and was preserved");
+        }
       } catch (rollbackError) {
         rollbackErrors.push(`source note: ${errorMessage(rollbackError)}`);
       }
@@ -87,7 +92,7 @@ export async function executeReviewTransaction(
       try {
         const current = await vault.read(sidecar);
         if (current === input.buildSidecar(buildAttachmentLink(app, input.attachment, input.sourceNote))) {
-          await vault.delete(sidecar, true);
+          await app.fileManager.trashFile(sidecar);
         } else {
           rollbackErrors.push("sidecar changed during rollback and was preserved");
         }
@@ -139,14 +144,18 @@ export async function executeEditReplacementTransaction(
 
   try {
     await vault.modifyBinary(input.target, replacementContent);
-    await vault.modify(input.sidecar, input.updatedSidecarContent);
-    await vault.delete(input.replacement, true);
+    await vault.process(input.sidecar, (current) => {
+      if (current !== sidecarBefore) throw new Error("Sidecar changed during replacement");
+      return input.updatedSidecarContent;
+    });
+    await app.fileManager.trashFile(input.replacement);
   } catch (error) {
     const rollbackErrors: string[] = [];
     try {
-      const current = await vault.read(input.sidecar);
-      if (current === input.updatedSidecarContent) await vault.modify(input.sidecar, sidecarBefore);
-      else if (current !== sidecarBefore) rollbackErrors.push("sidecar changed during rollback and was preserved");
+      const restored = await restoreIfUnchanged(app, input.sidecar, input.updatedSidecarContent, sidecarBefore);
+      if (!restored && (await vault.read(input.sidecar)) !== sidecarBefore) {
+        rollbackErrors.push("sidecar changed during rollback and was preserved");
+      }
     } catch (rollbackError) {
       rollbackErrors.push(`sidecar: ${errorMessage(rollbackError)}`);
     }
@@ -164,6 +173,21 @@ export async function executeEditReplacementTransaction(
     const rollbackSuffix = rollbackErrors.length > 0 ? ` Rollback warnings: ${rollbackErrors.join("; ")}` : "";
     throw new Error(`${errorMessage(error)}${rollbackSuffix}`);
   }
+}
+
+async function restoreIfUnchanged(
+  app: App,
+  file: TFile,
+  written: string,
+  previous: string
+): Promise<boolean> {
+  let restored = false;
+  await app.vault.process(file, (current) => {
+    if (current !== written) return current;
+    restored = true;
+    return previous;
+  });
+  return restored;
 }
 
 async function ensureParentFolder(app: App, filePath: string): Promise<void> {

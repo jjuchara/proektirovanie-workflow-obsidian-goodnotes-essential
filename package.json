@@ -1,7 +1,7 @@
 {
   "name": "goodnotes-handwriting-workflow",
   "version": "0.1.0",
-  "description": "Obsidian workflow for explicit, non-destructive Goodnotes handwriting capture.",
+  "description": "Start a Goodnotes handwriting session from an Obsidian note and safely attach the exported PDF or image.",
   "main": "main.js",
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "validate": "node scripts/validate.mjs",
-    "check": "npm run typecheck && npm test && npm run build && npm run validate"
+    "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run validate",
+    "lint": "eslint ."
   },
   "keywords": [
     "obsidian",
@@ -20,10 +21,15 @@
   "author": "jjuchara",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.2",
     "esbuild": "^0.28.1",
+    "eslint": "^10.11.0",
+    "eslint-plugin-obsidianmd": "^0.4.2",
+    "globals": "^17.12.0",
     "obsidian": "^1.13.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.0",
     "vitest": "^4.1.10"
   }
 }

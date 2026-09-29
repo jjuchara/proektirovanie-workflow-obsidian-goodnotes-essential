@@ -36,26 +36,27 @@ class FakeVault {
   }
 
   async readBinary(file: FakeFile): Promise<ArrayBuffer> {
-    return new TextEncoder().encode(file.content).buffer as ArrayBuffer;
+    return new TextEncoder().encode(file.content).buffer;
   }
 
   async createFolder(path: string): Promise<void> {
     this.folders.add(path);
   }
 
-  async modify(file: FakeFile, content: string): Promise<void> {
+  async process(file: FakeFile, fn: (data: string) => string): Promise<string> {
     if (this.failModify) {
       this.failModify = false;
       throw new Error("modify failed");
     }
-    file.content = content;
+    file.content = fn(file.content);
+    return file.content;
   }
 
   async modifyBinary(file: FakeFile, content: ArrayBuffer): Promise<void> {
     file.content = new TextDecoder().decode(content);
   }
 
-  async delete(file: FakeFile): Promise<void> {
+  async trash(file: FakeFile): Promise<void> {
     if (this.failDelete) {
       this.failDelete = false;
       throw new Error("delete failed");
@@ -77,6 +78,9 @@ function makeApp(vault: FakeVault): never {
         file.path = nextPath;
         file.extension = nextPath.split(".").at(-1) ?? "";
         vault.files.set(nextPath, file);
+      },
+      async trashFile(file: FakeFile): Promise<void> {
+        await vault.trash(file);
       },
       generateMarkdownLink(file: FakeFile): string {
         return `[[${file.path}]]`;
@@ -174,6 +178,29 @@ describe("review transaction", () => {
     expect(vault.files.has("6. Inbox/Handwriting/Goodnotes/export.png")).toBe(true);
     expect(vault.files.has("1. Projects/Alpha/screens/final.md")).toBe(false);
     expect(source.content).toBe("# Note\n");
+  });
+  it("rolls back when the source note changes during confirmation", async () => {
+    const vaultProcess = vault.process.bind(vault);
+    vault.process = async (file, fn) => {
+      if (file === source) file.content = "# Concurrent\n";
+      vault.process = vaultProcess;
+      return await vaultProcess(file, fn);
+    };
+    await expect(
+      executeReviewTransaction(makeApp(vault), {
+        attachment: attachment as never,
+        finalAttachmentPath: "1. Projects/Alpha/screens/final.png",
+        sidecarPath: "1. Projects/Alpha/screens/final.md",
+        sourceNote: source as never,
+        expectedSourceContent: source.content,
+        insertionMode: "end",
+        insertionOffset: source.content.length,
+        buildSidecar: (link) => link
+      })
+    ).rejects.toThrow("Source note changed during confirmation");
+    expect(source.content).toBe("# Concurrent\n");
+    expect(vault.files.has("6. Inbox/Handwriting/Goodnotes/export.png")).toBe(true);
+    expect(vault.files.has("1. Projects/Alpha/screens/final.md")).toBe(false);
   });
 });
 

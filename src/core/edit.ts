@@ -72,7 +72,7 @@ function readYamlString(content: string, field: string): string | null {
   const match = new RegExp(`^${field}:\\s*(.+)$`, "m").exec(content);
   if (match === null || match[1] === undefined || match[1].trim() === "null") return null;
   try {
-    const value = JSON.parse(match[1]);
+    const value: unknown = JSON.parse(match[1]);
     return typeof value === "string" && value.length > 0 ? value : null;
   } catch {
     return null;

@@ -21,6 +21,7 @@ for (const releaseFile of ["main.js", "manifest.json", "styles.css"]) {
 
 const sourceFiles = [
   "src/main.ts",
+  "src/i18n.ts",
   "src/settings.ts",
   "src/transaction.ts",
   "src/types.ts",
